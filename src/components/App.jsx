@@ -1,5 +1,5 @@
-import { Component } from 'react';
-import { GlobalStyle } from './GlobaleStyle';
+import { useState, useEffect } from 'react';
+import { GlobalStyle } from './GlobalStyle';
 import { nanoid } from 'nanoid';
 import { Notify } from 'notiflix';
 
@@ -10,30 +10,34 @@ import { Section } from './Section';
 import { Layout } from './Layout';
 import { Notification } from './Notification';
 
+import { useLocalStorage } from '../hooks/';
+
 const LS_KEY = 'contacts';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+// const getContacts = () => {
+//   const savedAndParsedContacts = JSON.parse(localStorage.getItem(LS_KEY));
+//   if (savedAndParsedContacts !== null) {
+//     return savedAndParsedContacts;
+//   }
+//   return [];
+// };
 
-  componentDidMount() {
-    const savedAndParsedContacts = JSON.parse(localStorage.getItem(LS_KEY));
-    if (savedAndParsedContacts !== null) {
-      return this.setState({ contacts: savedAndParsedContacts });
-    }
-    this.setState({ contacts: [] });
-  }
+export const App = () => {
+  const [contacts, setContacts] = useLocalStorage(LS_KEY, []);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem(LS_KEY, JSON.stringify(this.state.contacts));
-    }
-  }
+  // const [contacts, setContacts] = useState(() => {
+  //   return JSON.parse(window.localStorage.getItem(LS_KEY)) ?? [];
+  // });
 
-  addContact = ({ name, number }) => {
-    const { contacts } = this.state;
+  // const [contacts, setContacts] = useState(getContacts);
+
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    window.localStorage.setItem(LS_KEY, JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContact = ({ name, number }) => {
     const contact = {
       id: nanoid(),
       name,
@@ -44,52 +48,47 @@ export class App extends Component {
     if (contacts.find(({ name }) => name.toLowerCase() === normalizedName)) {
       return Notify.info(`${name} is already in contacts!`);
     }
-    return this.setState(({ contacts }) => ({
-      contacts: [contact, ...contacts],
-    }));
+
+    setContacts(prevState => [...prevState, contact]);
   };
 
-  deleteContact = contactId => {
-    this.setState(({ contacts }) => ({
-      contacts: contacts.filter(contact => contact.id !== contactId),
-    }));
+  const deleteContact = contactId => {
+    setContacts(prevState =>
+      prevState.filter(contact => contact.id !== contactId)
+    );
   };
 
-  changeFilter = e => this.setState({ filter: e.target.value });
+  const changeFilter = e => setFilter(e.target.value);
 
-  getVisibleContacts = () => {
-    const { contacts, filter } = this.state;
+  const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
 
-  render() {
-    const { contacts, filter } = this.state;
-    const visibleContacts = this.getVisibleContacts();
+  const visibleContacts = getVisibleContacts();
 
-    return (
-      <Section>
-        <Layout>
-          <GlobalStyle />
-          <h1>Phonebook</h1>
-          <ContactForm onSubmit={this.addContact} />
+  return (
+    <Section>
+      <Layout>
+        <GlobalStyle />
+        <h1>Phonebook</h1>
+        <ContactForm onSubmit={addContact} />
 
-          <h2>Contacts</h2>
-          {contacts.length ? (
-            <>
-              <Filter value={filter} onChange={this.changeFilter} />
-              <ContactList
-                contacts={visibleContacts}
-                onDeleteContact={this.deleteContact}
-              />
-            </>
-          ) : (
-            <Notification message="There are no contacts in your phonebook. Please add a contact!" />
-          )}
-        </Layout>
-      </Section>
-    );
-  }
-}
+        <h2>Contacts</h2>
+        {contacts.length ? (
+          <>
+            <Filter value={filter} onChange={changeFilter} />
+            <ContactList
+              contacts={visibleContacts}
+              onDeleteContact={deleteContact}
+            />
+          </>
+        ) : (
+          <Notification message="There are no contacts in your phonebook. Please add a contact!" />
+        )}
+      </Layout>
+    </Section>
+  );
+};
