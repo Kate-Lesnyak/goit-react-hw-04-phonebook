@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { GlobalStyle } from './GlobalStyle';
 import { nanoid } from 'nanoid';
 import { Notify } from 'notiflix';
@@ -25,17 +25,13 @@ const LS_KEY = 'contacts';
 export const App = () => {
   const [contacts, setContacts] = useLocalStorage(LS_KEY, []);
 
-  // const [contacts, setContacts] = useState(() => {
-  //   return JSON.parse(window.localStorage.getItem(LS_KEY)) ?? [];
-  // });
-
   // const [contacts, setContacts] = useState(getContacts);
 
-  const [filter, setFilter] = useState('');
+  // useEffect(() => {
+  //   window.localStorage.setItem(LS_KEY, JSON.stringify(contacts));
+  // }, [contacts]);
 
-  useEffect(() => {
-    window.localStorage.setItem(LS_KEY, JSON.stringify(contacts));
-  }, [contacts]);
+  const [filter, setFilter] = useState('');
 
   const addContact = ({ name, number }) => {
     const contact = {
