@@ -11,33 +11,6 @@ import {
   StyledErrorMessage,
 } from './ContactForm.styled';
 
-const phoneSchema = Yup.string().phone().required('Number is a required field');
-
-// (async () => {
-//   console.log(await phoneSchema.isValid('9876543210')); // → true
-// })();
-
-// const phoneSchema = yup
-//   .string()
-//   .phone('IN', true, '${path} is invalid')
-//   .required();
-
-// try {
-//   phoneSchema.validateSync('+1 345 9490088');
-// } catch (error) {
-//   console.log(error.message); // → this is invalid
-// }
-
-//  it('validate phone number strictly with IN (India) region with custom error message', () => {
-//    const phoneSchema = yup
-//      .string()
-//      .phone('IN', true, '${path} is invalid')
-//      .required();
-//    expect(() => {
-//      phoneSchema.validateSync('+1 345 9490088');
-//    }).toThrow('is invalid');
-//  });
-
 const formSchema = Yup.object().shape({
   name: Yup.string()
     .min(3, 'Too Short!')
@@ -56,9 +29,7 @@ const formSchema = Yup.object().shape({
   //   )
   //   .required('Number is a required field'),
 
-  number: (async () => {
-    await phoneSchema.isValid('9876543210');
-  })(),
+  number: Yup.string().phone().required(),
 });
 
 export const ContactForm = ({ onSubmit }) => {
